@@ -1,0 +1,42 @@
+name: repro
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+env:
+  AQUA_LOG_COLOR: "off"
+jobs:
+  repro:
+    name: ${{ matrix.registry }} / token=${{ matrix.token }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - registry: v4.593.0
+            token: "yes"
+          - registry: v4.593.0
+            token: "no"
+          - registry: v4.592.0
+            token: "yes"
+    defaults:
+      run:
+        working-directory: ${{ matrix.registry }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047 # v4.1.2
+        with:
+          aqua_version: v2.66.1
+          working_directory: ${{ matrix.registry }}
+        env:
+          GITHUB_TOKEN: ${{ matrix.token == 'yes' && github.token || '' }}
+      - run: aqua info
+      - run: cat aqua.yaml
+      - run: trivy --version
+        env:
+          GITHUB_TOKEN: ${{ matrix.token == 'yes' && github.token || '' }}

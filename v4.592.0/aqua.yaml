@@ -1,0 +1,5 @@
+registries:
+  - type: standard
+    ref: v4.592.0
+packages:
+  - name: aquasecurity/trivy@v0.76.2
